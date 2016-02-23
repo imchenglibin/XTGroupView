@@ -1,4 +1,4 @@
-# XTPageControl
+# XTGroupView
 An easy solution to group view
 
 ## Overview
