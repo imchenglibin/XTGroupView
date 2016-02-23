@@ -8,9 +8,12 @@
 
 #import "XTGroupView.h"
 
-#define GROUP_ITEM_MARGIN 10
-#define GROUP_TITLE_LABEL_HEIGHT 40
-#define SELECTED_COLOR [UIColor colorWithRed:3.0 / 255.0 green:152.0 / 255.0 blue:250.0 / 255 alpha:1.0]
+#define kGroupItemMargin 10
+#define kGroupTitleLableHeight 40
+#define kGroupItemColorSelected [UIColor colorWithRed:3.0 / 255.0 green:152.0 / 255.0 blue:250.0 / 255 alpha:1.0]
+#define kGroupItemColorNormal [UIColor groupTableViewBackgroundColor]
+#define kTitleColorNormal [UIColor blackColor]
+#define kTitleColorSelected [UIColor whiteColor]
 
 @interface XTGroupItem : NSObject
 - (instancetype)initWithButton:(UIButton*)button isSelected:(BOOL)isSelected groupIndex:(NSInteger)groupIndex groupItemIndex:(NSInteger)groupItemIndex;
@@ -57,61 +60,91 @@
 
 @implementation XTGroupView
 
-- (void)setDataSource:(id<XTGroupViewDataSource>)dataSource {
-    _dataSource = dataSource;
-    
-    self.groups = [NSMutableArray array];
-    
-    NSInteger numberOfGroups = [dataSource numberOfGroups];
-    
-    for (NSInteger groupIndex=0; groupIndex<numberOfGroups; groupIndex++) {
-        XTGroup *group = [[XTGroup alloc] init];
+- (instancetype)init {
+    if (self = [super init]) {
+        [self setup];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder {
+    if (self = [super initWithCoder:aDecoder]) {
+        [self setup];
+    }
+    return self;
+}
+
+- (instancetype)initWithFrame:(CGRect)frame {
+    if (self = [super initWithFrame:frame]) {
+        [self setup];
+    }
+    return self;
+}
+
+- (void)setup {
+    _groupItemBackgroundColorNormal = kGroupItemColorNormal;
+    _groupItemBackgroundColorSelected = kGroupItemColorSelected;
+    _groupItemTitleColorNormal = kTitleColorNormal;
+    _groupItemTitleColorSelected = kTitleColorSelected;
+    _groupTitleColor = kTitleColorNormal;
+}
+
+- (void)makeGroups {
+    if (self.dataSource && !self.groups) {
+        self.groups = [NSMutableArray array];
         
-        if ([dataSource respondsToSelector:@selector(titleOfGroup:)]) {
-            NSString *titleOfGroup = [dataSource titleOfGroup:groupIndex];
-            if (titleOfGroup && ![titleOfGroup isEqualToString:@""]) {
-                UILabel *label = [[UILabel alloc] init];
-                label.font = [UIFont systemFontOfSize:14];
-                label.text = titleOfGroup;
-                label.textAlignment = NSTextAlignmentLeft;
-                group.titleLabel = label;
-                [self addSubview:label];
+        NSInteger numberOfGroups = [self.dataSource numberOfGroups];
+        
+        for (NSInteger groupIndex=0; groupIndex<numberOfGroups; groupIndex++) {
+            XTGroup *group = [[XTGroup alloc] init];
+            
+            if ([self.dataSource respondsToSelector:@selector(titleOfGroup:)]) {
+                NSString *titleOfGroup = [self.dataSource titleOfGroup:groupIndex];
+                if (titleOfGroup && ![titleOfGroup isEqualToString:@""]) {
+                    UILabel *label = [[UILabel alloc] init];
+                    label.font = [UIFont systemFontOfSize:14];
+                    label.text = titleOfGroup;
+                    label.textAlignment = NSTextAlignmentLeft;
+                    label.textColor = self.groupTitleColor;
+                    group.titleLabel = label;
+                    [self addSubview:label];
+                }
             }
+            
+            NSInteger numberOfGroupItems = [self.dataSource numberOfGroupItems:groupIndex];
+            for (NSInteger groupItemIndex=0; groupItemIndex<numberOfGroupItems; groupItemIndex++) {
+                NSString *groupItemTitle = [self.dataSource titleOfGroupItem:groupIndex index:groupItemIndex];
+                UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
+                button.layer.cornerRadius = 3;
+                button.backgroundColor = self.groupItemBackgroundColorNormal;
+                [button setTitle:groupItemTitle forState:UIControlStateNormal];
+                [button setTitleColor:self.groupItemTitleColorNormal forState:UIControlStateNormal];
+                button.titleLabel.font = [UIFont systemFontOfSize:12];
+                [button sizeToFit];
+                button.frame = CGRectMake(0, 0, button.frame.size.width + kGroupItemMargin, button.frame.size.height);
+                [self addSubview:button];
+                
+                BOOL isSelected = NO;
+                if ([self.dataSource respondsToSelector:@selector(isGroupItemSelected:index:)]) {
+                    isSelected = [self.dataSource isGroupItemSelected:groupIndex index:groupItemIndex];
+                }
+                
+                if (isSelected) {
+                    [button setTitleColor:self.groupItemTitleColorSelected forState:UIControlStateNormal];
+                    button.backgroundColor = self.groupItemBackgroundColorSelected;
+                }
+                
+                [group.groupItems addObject:[[XTGroupItem alloc] initWithButton:button isSelected:isSelected groupIndex:groupIndex groupItemIndex:groupItemIndex]];
+                button.tag = groupIndex;
+                [button addTarget:self action:@selector(selectGroupItem:) forControlEvents:UIControlEventTouchUpInside];
+            }
+            
+            group.underlineView = [[UIView alloc] init];
+            group.underlineView.backgroundColor = [UIColor groupTableViewBackgroundColor];
+            [self addSubview:group.underlineView];
+            
+            [self.groups addObject:group];
         }
-        
-        NSInteger numberOfGroupItems = [dataSource numberOfGroupItems:groupIndex];
-        for (NSInteger groupItemIndex=0; groupItemIndex<numberOfGroupItems; groupItemIndex++) {
-            NSString *groupItemTitle = [dataSource titleOfGroupItem:groupIndex index:groupItemIndex];
-            UIButton *button = [UIButton buttonWithType:UIButtonTypeCustom];
-            button.layer.cornerRadius = 3;
-            button.backgroundColor = [UIColor groupTableViewBackgroundColor];
-            [button setTitle:groupItemTitle forState:UIControlStateNormal];
-            [button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-            button.titleLabel.font = [UIFont systemFontOfSize:12];
-            [button sizeToFit];
-            button.frame = CGRectMake(0, 0, button.frame.size.width + GROUP_ITEM_MARGIN, button.frame.size.height);
-            [self addSubview:button];
-            
-            BOOL isSelected = NO;
-            if ([self.dataSource respondsToSelector:@selector(isGroupItemSelected:index:)]) {
-                isSelected = [self.dataSource isGroupItemSelected:groupIndex index:groupItemIndex];
-            }
-            
-            if (isSelected) {
-                [button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-                button.backgroundColor = SELECTED_COLOR;
-            }
-            
-            [group.groupItems addObject:[[XTGroupItem alloc] initWithButton:button isSelected:isSelected groupIndex:groupIndex groupItemIndex:groupItemIndex]];
-            button.tag = groupIndex;
-            [button addTarget:self action:@selector(selectGroupItem:) forControlEvents:UIControlEventTouchUpInside];
-        }
-        
-        group.underlineView = [[UIView alloc] init];
-        group.underlineView.backgroundColor = [UIColor groupTableViewBackgroundColor];
-        [self addSubview:group.underlineView];
-        
-        [self.groups addObject:group];
     }
 }
 
@@ -145,20 +178,20 @@
         }
         
         if (currentGroupItem.isSelected) {
-            [currentGroupItem.button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-            currentGroupItem.button.backgroundColor = [UIColor groupTableViewBackgroundColor];
+            [currentGroupItem.button setTitleColor:self.groupItemTitleColorNormal forState:UIControlStateNormal];
+            currentGroupItem.button.backgroundColor = self.groupItemBackgroundColorNormal;
             currentGroupItem.isSelected = NO;
         } else {
-            [currentGroupItem.button setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+            [currentGroupItem.button setTitleColor:self.groupItemTitleColorSelected forState:UIControlStateNormal];
             currentGroupItem.isSelected = YES;
-            currentGroupItem.button.backgroundColor = SELECTED_COLOR;
+            currentGroupItem.button.backgroundColor = self.groupItemBackgroundColorSelected;
         }
         
         if (!allowMutiSelect) {
             for (XTGroupItem *groupItem in group.groupItems) {
                 if (groupItem != currentGroupItem) {
-                    [groupItem.button setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-                    groupItem.button.backgroundColor = [UIColor groupTableViewBackgroundColor];
+                    [groupItem.button setTitleColor:self.groupItemTitleColorNormal forState:UIControlStateNormal];
+                    groupItem.button.backgroundColor = self.groupItemBackgroundColorNormal;
                     groupItem.isSelected = NO;
                 }
             }
@@ -169,26 +202,28 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
     
+    [self makeGroups];
+    
     CGFloat top = 0;
     
     for (XTGroup *group in self.groups) {
         if (group.titleLabel) {
-            group.titleLabel.frame = CGRectMake(GROUP_ITEM_MARGIN, top, self.bounds.size.width - GROUP_ITEM_MARGIN, GROUP_TITLE_LABEL_HEIGHT);
-            top += GROUP_TITLE_LABEL_HEIGHT;
+            group.titleLabel.frame = CGRectMake(kGroupItemMargin, top, self.bounds.size.width - kGroupItemMargin, kGroupTitleLableHeight);
+            top += kGroupTitleLableHeight;
         }
-        CGFloat left = GROUP_ITEM_MARGIN;
+        CGFloat left = kGroupItemMargin;
         for (XTGroupItem *groupItem in group.groupItems) {
-            if (left + groupItem.button.frame.size.width + GROUP_ITEM_MARGIN > self.bounds.size.width) {
-                left = GROUP_ITEM_MARGIN;
-                top += groupItem.button.frame.size.height + GROUP_ITEM_MARGIN;
+            if (left + groupItem.button.frame.size.width + kGroupItemMargin > self.bounds.size.width) {
+                left = kGroupItemMargin;
+                top += groupItem.button.frame.size.height + kGroupItemMargin;
             }
             
             groupItem.button.frame = CGRectMake(left, top, groupItem.button.frame.size.width, groupItem.button.frame.size.height);
             
-            left += groupItem.button.frame.size.width + GROUP_ITEM_MARGIN;
+            left += groupItem.button.frame.size.width + kGroupItemMargin;
             
             if (groupItem == group.groupItems.lastObject) {
-                top += groupItem.button.frame.size.height + GROUP_ITEM_MARGIN;
+                top += groupItem.button.frame.size.height + kGroupItemMargin;
             }
         }
         

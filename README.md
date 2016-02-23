@@ -1,18 +1,23 @@
-//
-//  XTGroupView.h
-//  XTGroupView
-//
-//  Created by imchenglibin on 16/2/20.
-//  Copyright © 2016年 xt. All rights reserved.
-//
+# XTPageControl
+An easy solution to group view
 
-#import <UIKit/UIKit.h>
+## Overview
+<img height=500 src="https://github.com/imchenglibin/XTGroupView/blob/master/Images/Demo.png">
 
-typedef NS_ENUM(NSInteger, XTGroupViewSeparatorLineStyle) {
-    XTGroupViewSeparatorLineStyleNone = 0,
-    XTGroupViewSeparatorLineStyleSingleLine = 1
-};
+## Usage
+Drag the folder to your project.<br>
+<img height=200 src="https://github.com/imchenglibin/XTGroupView/blob/master/Images/Folder.png">
 
+```objective-c
+#import "XTGroupView.h"
+```
+
+Create a XTGroupView: <br>
+```objective-c
+[[XTGroupView alloc] init];
+```
+Then you have to implements the data source and groupViewDelegate:<br>
+```objective-c
 @protocol XTGroupViewDataSource <NSObject>
 //the number of groups
 - (NSInteger)numberOfGroups;
@@ -44,11 +49,11 @@ typedef NS_ENUM(NSInteger, XTGroupViewSeparatorLineStyle) {
 - (BOOL)allowMutiSelect:(NSInteger)group;
 
 @end
+```
 
-@interface XTGroupView : UIScrollView
+Properties that the group view current support<br/>
 
-@property(weak, nonatomic)id<XTGroupViewDataSource> dataSource;
-@property(weak, nonatomic)id<XTGroupViewDelegate> groupViewDelegate;
+```objective-c
 @property(assign, nonatomic)XTGroupViewSeparatorLineStyle separatorLineStyle;
 
 @property(strong, nonatomic)UIColor *groupItemTitleColorNormal;
@@ -56,5 +61,12 @@ typedef NS_ENUM(NSInteger, XTGroupViewSeparatorLineStyle) {
 @property(strong, nonatomic)UIColor *groupItemBackgroundColorNormal;
 @property(strong, nonatomic)UIColor *groupItemBackgroundColorSelected;
 @property(strong, nonatomic)UIColor *groupTitleColor;
+```
 
-@end
+For more detail usage of the XTGroupView refer to the demo in this project.
+
+## Pod Support
+pod 'XTGroupView', :git => 'https://github.com/imchenglibin/XTGroupView.git'
+
+## License
+This project use `MIT` license, for more details refer to `LICENSE` file

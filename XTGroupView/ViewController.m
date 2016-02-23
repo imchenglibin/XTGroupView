@@ -26,19 +26,24 @@
               @[@"塑料", @"装置", @"陶瓷", @"摄影", @"玻璃／琉璃", @"艺术设计品", @"油画", @"中国水墨", @"版画", @"综合材料", @"书法／印章"],
               @[@"自然风光", @"人物肖像", @"城市风景", @"动物／宠物／花鸟", @"抽象", @"时尚", @"山水", @"静物", @"幽默", @"日常生活", @"食物", @"宗教／禅修", @"民族／原生态"]
               ];
-    
-    // Do any additional setup after loading the view, typically from a nib.
     groupView = [[XTGroupView alloc] init];
     groupView.separatorLineStyle = XTGroupViewSeparatorLineStyleSingleLine;
     groupView.dataSource = self;
     groupView.groupViewDelegate = self;
+    
+//    groupView.groupTitleColor = [UIColor redColor];
+//    
+//    groupView.groupItemTitleColorNormal = [UIColor redColor];
+//    groupView.groupItemTitleColorSelected = [UIColor yellowColor];
+//    
+//    groupView.groupItemBackgroundColorNormal = [UIColor blackColor];
+//    groupView.groupItemBackgroundColorSelected = [UIColor orangeColor];
     
     [self.view addSubview:groupView];
 }
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 - (NSInteger)numberOfGroups {
@@ -54,10 +59,13 @@
 }
 
 - (BOOL)isGroupItemSelected:(NSInteger)group index:(NSInteger)index {
-    return NO;
+    return group == 0 && index % 2 == 0;
 }
 
 - (BOOL)allowMutiSelect:(NSInteger)group {
+    if (group == 2) {
+        return NO;
+    }
     return YES;
 }
 
@@ -70,7 +78,7 @@
 }
 
 - (NSString*)titleOfGroup:(NSInteger)group {
-    return [@[@"用途", @"材料", @"题材"] objectAtIndex:group];
+    return [@[@"用途（默认选中）", @"材料(多选)", @"题材（单选）"] objectAtIndex:group];
 }
 
 - (void)viewDidLayoutSubviews {
