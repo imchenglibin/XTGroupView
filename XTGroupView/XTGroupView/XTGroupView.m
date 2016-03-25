@@ -87,6 +87,7 @@
     _groupItemTitleColorNormal = kTitleColorNormal;
     _groupItemTitleColorSelected = kTitleColorSelected;
     _groupTitleColor = kTitleColorNormal;
+    _groupItemHeight = kGroupTitleLableHeight;
 }
 
 - (void)makeGroups {
@@ -121,7 +122,7 @@
                 [button setTitleColor:self.groupItemTitleColorNormal forState:UIControlStateNormal];
                 button.titleLabel.font = [UIFont systemFontOfSize:12];
                 [button sizeToFit];
-                button.frame = CGRectMake(0, 0, button.frame.size.width + kGroupItemMargin, button.frame.size.height);
+                button.frame = CGRectMake(0, 0, button.frame.size.width + kGroupItemMargin, _groupItemHeight);
                 [self addSubview:button];
                 
                 BOOL isSelected = NO;

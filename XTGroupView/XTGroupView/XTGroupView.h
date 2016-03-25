@@ -56,5 +56,6 @@ typedef NS_ENUM(NSInteger, XTGroupViewSeparatorLineStyle) {
 @property(strong, nonatomic)UIColor *groupItemBackgroundColorNormal;
 @property(strong, nonatomic)UIColor *groupItemBackgroundColorSelected;
 @property(strong, nonatomic)UIColor *groupTitleColor;
+@property (assign, nonatomic) CGFloat groupItemHeight;
 
 @end
