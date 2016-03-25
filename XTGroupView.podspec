@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "XTGroupView"
-  s.version      = "0.0.1"
+  s.version      = "0.0.2"
   s.summary      = "An easy solution to group view."
   s.homepage     = "https://github.com/imchenglibin/XTGroupView"
   s.license      = "MIT"
